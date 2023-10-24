@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth, signInWithRedirect, signInWithPopup, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth'
+import { getAuth, signInWithRedirect, signInWithPopup, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth'
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore'
 
 
@@ -30,7 +30,7 @@ export const db = getFirestore()
 
 
 // USed for adding user to the database collection
-export const createUserDocumentFromAuth = async (userAuth,additionalInformation) => {
+export const createUserDocumentFromAuth = async (userAuth, additionalInformation) => {
     if (!userAuth) {
         return;
     }
@@ -50,7 +50,7 @@ export const createUserDocumentFromAuth = async (userAuth,additionalInformation)
             const email = userAuth.email
             const createdAt = new Date()
             try {
-                await setDoc(userDocRef, { displayName, email, createdAt,...additionalInformation })
+                await setDoc(userDocRef, { displayName, email, createdAt, ...additionalInformation })
                 console.log("User Added")
             }
             catch (err) {
@@ -74,20 +74,18 @@ export const createAuthUserDocumentWithEmailandPassword = async (email, password
     if (!email || !password) {
         return;
     }
-    try{
+    try {
 
         const authenticated_email_user = await createUserWithEmailAndPassword(auth, email, password);
         console.log("Successfully Authenticated")
         return authenticated_email_user;
     }
-    catch(err)
-    {
-        if(err.code==='auth/email-already-in-use')
-        {
+    catch (err) {
+        if (err.code === 'auth/email-already-in-use') {
 
-            console.log("Error: ",err)
+            console.log("Error: ", err)
         }
-        else{
+        else {
             console.log("Authenticating Email/Password Error")
         }
     }
@@ -99,10 +97,16 @@ export const signInAuthUserDocumentWithEmailandPassword = async (email, password
     if (!email || !password) {
         return;
     }
-    else{
+    else {
         // console.log("INside firebase.utils")
         // console.log(auth,email,password)
-        const response = await signInWithEmailAndPassword(auth,email,password)
+        const response = await signInWithEmailAndPassword(auth, email, password)
         return response
     }
+
+
 }
+
+export const signOutUser = async () => signOut(auth)
+
+export const onAuthStateChangedListener = (callback) => onAuthStateChanged(auth, callback)
